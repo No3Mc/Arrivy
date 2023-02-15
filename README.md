@@ -124,15 +124,13 @@ Agar aap already Node.js install kiye hue hain aur koi error aa raha hai, toh sa
 
 Dependencies:
 
-
-        var request = require('request');
-        var csvWriter = require('csv-writer');
-
-Inside JS:
-
             npm install request
             npm install csv-writer
 
+Inside JS:
+
+        var request = require('request');
+        var csvWriter = require('csv-writer');
 
 Explanation:
 

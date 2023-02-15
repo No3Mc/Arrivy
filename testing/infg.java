@@ -1,3 +1,4 @@
+package testing;
 Class Example
 {
     void examplemethod (int arr [])
