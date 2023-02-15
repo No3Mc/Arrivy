@@ -1,12 +1,10 @@
 import requests
-from flask import Flask, request, jsonify
-import json # import the json module
+from flask import Flask, request
+from flask_csv import send_csv
 
+app = Flask(__name__)
 
-app = Flask (__name__)
-
-
-# endpoint for the customers api
+# endpoint for the customers API
 @app.route('/customers', methods=['GET'])
 def get_customers():
     url = 'https://api.arrivy.app/api/v2/customers/'
@@ -17,24 +15,23 @@ def get_customers():
     response = requests.get(url, headers=headers)
     customers = response.json()
 
-    # write the customers list to a JSON file
-    with open('customers.json', 'w') as file: # open a file in write mode
-        json.dump(customers, file) # write the customers list to the file
+    # retrieve query parameters
+    page = int(request.args.get('page', 1))
+    items_per_page = int(request.args.get('items_per_page', 500))
+    external_id = request.args.get('external_id', None)
+    group_id = request.args.get('group_id', None)
 
-    # get from the url
-    page = int(request.args.get('page', 1));
-    items_per_page = int(request.args.get('items_per_page', 500));
-    external_id = request.args.get('external_id', None); #testing ph
-    group_id = request.args.get('group_id', None) #testing ph
-
-    #filter custs
+    # filter customers if necessary
     if external_id:
         customers = [c for c in customers if str(c.get('external_id')) == str(external_id)]
     if group_id:
-        customers = [c for c in customers if str (c.get('group_id')) == str(group_id)]
+        customers = [c for c in customers if str(c.get('group_id')) == str(group_id)]
+
+    # slice the customers list based on pagination parameters
     start_index = (page - 1) * items_per_page
     end_index = start_index + items_per_page
     customers = customers[start_index:end_index]
-    
-    # return the filtered customers as a JSON response
-    return jsonify(customers)
+
+    # send the customers list as a CSV file
+    fieldnames = customers[0].keys() if customers else []
+    return send_csv(customers, "customers.csv", fieldnames=fieldnames)
