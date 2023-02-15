@@ -1,37 +1,39 @@
 import requests
-from flask import Flask, request
-from flask_csv import send_csv
-
-app = Flask(__name__)
-
-# endpoint for the customers API
-@app.route('/customers', methods=['GET'])
-def get_customers():
-    url = 'https://api.arrivy.app/api/v2/customers/'
-    headers = {
-        'X-Auth-Key': '8d33bc0f-f0b1',
-        'X-Auth-Token': 'WrZxf40Y3lEvBB2t3J6bVs'
-    }
-    response = requests.get(url, headers=headers)
+import csv
+import os
+api_key = os.environ.get('8d33bc0f-f0b1')
+api_token = os.environ.get('WrZxf40Y3lEvBB2t3J6bVs')
+headers = {
+    'X-Auth-Key': "8d33bc0f-f0b1",
+    'X-Auth-Token': "WrZxf40Y3lEvBB2t3J6bVs"
+}
+base_url = 'https://app.arrivy.com/api'
+customer_data = []
+response = requests.get(base_url + '/customers', headers=headers)
+if response.status_code == 200:
     customers = response.json()
-
-    # retrieve query parameters
-    page = int(request.args.get('page', 1))
-    items_per_page = int(request.args.get('items_per_page', 500))
-    external_id = request.args.get('external_id', None)
-    group_id = request.args.get('group_id', None)
-
-    # filter customers if necessary
-    if external_id:
-        customers = [c for c in customers if str(c.get('external_id')) == str(external_id)]
-    if group_id:
-        customers = [c for c in customers if str(c.get('group_id')) == str(group_id)]
-
-    # slice the customers list based on pagination parameters
-    start_index = (page - 1) * items_per_page
-    end_index = start_index + items_per_page
-    customers = customers[start_index:end_index]
-
-    # send the customers list as a CSV file
-    fieldnames = customers[0].keys() if customers else []
-    return send_csv(customers, "customers.csv", fieldnames=fieldnames)
+    for customer in customers:
+        customer_id = customer.get('id')
+        response = requests.get(base_url + f'/customers/{customer_id}', headers=headers)
+        if response.status_code == 200:
+            customer_details = response.json()
+            name = customer_details.get('name')
+            email = customer_details.get('email')
+            phone = customer_details.get('phone')
+            address = customer_details.get('address')
+            customer_dict = {
+                'name': name,
+                'email': email,
+                'phone': phone,
+                'address': address
+            }
+            customer_data.append(customer_dict)
+        else:
+            print(f'Error getting customer details for {customer_id}: {response.status_code}')
+else:
+    print(f'Error getting customer list: {response.status_code}')
+with open('customer_data.csv', 'w', newline='') as csvfile:
+    writer = csv.writer(csvfile)
+    writer.writerow(['name', 'email', 'phone', 'address'])
+    for customer in customer_data:
+        writer.writerow([customer['name'], customer['email'], customer['phone'], customer['address']])
