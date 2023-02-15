@@ -83,4 +83,5 @@ request.get(base_url + '/customers', {headers: headers}, (error, response, body)
         .catch((error) =>
           console.error(error)
       );
+  }
   });
