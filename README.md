@@ -39,10 +39,13 @@ Agar aap pip install karne ke baad koi error aata hai, toh aapko pip ko uninstal
 Dependencies:
 
         Pip install requests
-            import requests
         Pip install csv
-            import csv
         Pip install os
+
+Inside PY:
+
+            import requests
+            import csv
             import os
 
 Explanation:
@@ -123,9 +126,13 @@ Dependencies:
 
 
         var request = require('request');
-            npm install request
         var csvWriter = require('csv-writer');
+
+Inside JS:
+
+            npm install request
             npm install csv-writer
+
 
 Explanation:
 
