@@ -15,8 +15,8 @@ const base_url = 'https://app.arrivy.com/api';
 const getCustomerDetails = async (customer) => {
   const response = await axios.get(`${base_url}/customers/${customer.id}`, { headers });
   if (response.status === 200) {
-    const { name, email, phone, address } = response.data;
-    return { name, email, phone, address };
+    const { id, first_name, last_name, email, mobile_number, city, state, country, extra_fields } = response.data;
+    return { id, first_name, last_name, email, mobile_number, city, state, country, extra_fields };
   } else {
     console.error(`Error getting customer details for ${customer.id}: ${response.status}`);
     return null;
