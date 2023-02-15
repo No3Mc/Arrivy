@@ -1,42 +1,48 @@
-var request = require('request');
-var fs = require('fs');
-var csvWriter = require('csv-writer');
-var apiKey = '8d33bc0f-f0b1';
-var authToken = 'WrZxf40Y3lEvBB2t3J6bVs';
-var apiUrl = 'https://app.arrivy.com/api/';
-var csvFile = 'customers.csv';
-request.get({
-  url: apiUrl,
-  headers: {
-    'X-API-KEY': apiKey,
-    'X-AUTH-TOKEN': authToken
-  }
-}, function (error, response, body) {
-  if (error) {
-    console.error(error);
-    return;
-  }
-  if (response.statusCode !== 200) {
-    console.error('Status code: ' + response.statusCode);
-    return;
-  }
-  var data = JSON.parse(body);
-  var customers = data.map(function (customer) {
-    return {
-      name: customer.name,
-      email: customer.email,
-      phone: customer.phone
-    };
-  });
-  var csvWriter = csvWriter.createArrayCsvWriter({
-    path: csvFile,
-    header: ['Name', 'Email', 'Phone']
-  });
-  csvWriter.writeRecords(customers)
-    .then(function () {
-      console.log('Customer data written to ' + csvFile);
-    })
-    .catch(function (error) {
-      console.error(error);
+const request = require('request');
+const fs = require('fs');
+const { Parser } = require('json2csv');
+require('dotenv').config();
+
+const api_key = process.env.API_KEY;
+const api_token = process.env.API_TOKEN;
+const headers = {
+  'X-Auth-Key': api_key,
+  'X-Auth-Token': api_token
+};
+const base_url = 'https://app.arrivy.com/api';
+const customer_data = [];
+
+request.get(base_url + '/customers', { headers }, (error, response, body) => {
+  if (!error && response.statusCode === 200) {
+    const customers = JSON.parse(body);
+    customers.forEach(customer => {
+      const customer_id = customer.id;
+      request.get(base_url + `/customers/${customer_id}`, { headers }, (error, response, body) => {
+        if (!error && response.statusCode === 200) {
+          const customer_details = JSON.parse(body);
+          const name = customer_details.name;
+          const email = customer_details.email;
+          const phone = customer_details.phone;
+          const address = customer_details.address;
+          const customer_dict = {
+            'name': name,
+            'email': email,
+            'phone': phone,
+            'address': address
+          };
+          customer_data.push(customer_dict);
+        } else {
+          console.log(`Error getting customer details for ${customer_id}: ${response.statusCode}`);
+        }
+      });
     });
+  } else {
+    console.log(`Error getting customer list: ${response.statusCode}`);
+  }
+}).on('complete', () => {
+  const fields = ['name', 'email', 'phone', 'address'];
+  const opts = { fields };
+  const parser = new Parser(opts);
+  const csv = parser.parse(customer_data);
+  fs.writeFileSync('customer_data.csv', csv);
 });

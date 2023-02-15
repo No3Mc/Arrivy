@@ -126,7 +126,8 @@ Dependencies:
 
             npm install request
             npm install csv-writer
-
+            npm install json2csv
+            npm install dotenv
 Inside JS:
 
         var request = require('request');
