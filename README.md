@@ -2,6 +2,8 @@ Writen on Arrivy for @[MaddyPrograms](https://github.com/MaddyPrograms)
 
 Below is the explaination in Urdu/English
 
+Api etc won't work anymore
+
 # Dependencies:
 
 Dependencies ka matlab hota hai kisi software, application ya code mein woh sab cheezain jin ki zaroorat hoti hai, jis se koi bhi program kaam karta hai wo cheezein dependencies kehlata hai.
